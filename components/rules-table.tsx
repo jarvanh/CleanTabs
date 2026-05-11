@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo, useCallback, useContext } from "react"
 
 import {
@@ -9,7 +8,6 @@ import {
   flexRender,
   ColumnFiltersState,
 } from "@tanstack/react-table"
-
 
 import { Button } from "@/components/ui/button"
 import {
@@ -41,30 +39,38 @@ import {
 } from "@/components/ui/table"
 
 import { DebouncedInput, Input } from "@/components/ui/input"
-import { Action, Actions, Rule, DefaultRules, v_rule_pattern, ValidateRule, ValidateRules, ValidationResult, TimeUnit, toMinutes, fromMinutes, getBestUnit } from "@/lib/rule"
-import { Checkbox, SmallCheckbox } from "@/components/ui/checkbox"
 import {
-  Plus,
-  Ellipsis,
-} from "lucide-react"
+  Action,
+  Actions,
+  Rule,
+  DefaultRules,
+  v_rule_pattern,
+  ValidateRule,
+  ValidateRules,
+  ValidationResult,
+  TimeUnit,
+  toMinutes,
+  fromMinutes,
+  getBestUnit,
+} from "@/lib/rule"
+import { Checkbox, SmallCheckbox } from "@/components/ui/checkbox"
+import { Plus, Ellipsis } from "lucide-react"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 
 import { storage } from "wxt/storage"
 import { STORAGE_KEY_RULES } from "@/lib/storage"
-import { AppStateContext } from "./Providers"
+import { AppStateContext } from "./providers"
 import { browser } from "wxt/browser"
 
-
 interface TabListItem {
-  favicon_url: string;
-  title: string;
-  url: string;
+  favicon_url: string
+  title: string
+  url: string
 }
 
-
 function makeDraftRule(url: string): Rule {
-  let pattern = '';
+  let pattern = ""
   const url_ = URL.parse(url)
   if (url_) {
     pattern = `${url_.origin}/*`
@@ -80,7 +86,6 @@ function makeDraftRule(url: string): Rule {
   }
 }
 
-
 // TODO:
 // - fields validation ✅
 // - duplicate ✅
@@ -89,7 +94,6 @@ function makeDraftRule(url: string): Rule {
 // - new column: add_to_stash ✅
 // - adjust ordering ✅
 export default function RulesTable() {
-
   const { rules: data, setRules: _setData } = useContext(AppStateContext)
   const [dataDirty, setDataDirty] = useState(false)
   const [vResult, setVResult] = useState<ValidationResult>({ ok: true })
@@ -129,7 +133,7 @@ export default function RulesTable() {
   function moveUp(index: number) {
     if (index < 1) return
     const copy: Rule[] = [...data]
-      ;[copy[index - 1], copy[index]] = [copy[index], copy[index - 1]]
+    ;[copy[index - 1], copy[index]] = [copy[index], copy[index - 1]]
     _setData(copy)
     setDataDirty(true)
     setRowSelection({})
@@ -138,7 +142,7 @@ export default function RulesTable() {
   function moveDown(index: number) {
     if (index >= data.length - 1) return
     const copy: Rule[] = [...data]
-      ;[copy[index + 1], copy[index]] = [copy[index], copy[index + 1]]
+    ;[copy[index + 1], copy[index]] = [copy[index], copy[index + 1]]
     _setData(copy)
     setDataDirty(true)
     setRowSelection({})
@@ -161,7 +165,6 @@ export default function RulesTable() {
     const res = ValidateRules(data)
     setVResult(res)
   }, [data, dataDirty])
-
 
   const columns = useMemo(() => {
     const columns: ColumnDef<Rule>[] = [
@@ -251,7 +254,9 @@ export default function RulesTable() {
           const initialMinutes = getValue() as number
           const initialUnit = getBestUnit(initialMinutes)
           const [unit, setUnit] = useState<TimeUnit>(initialUnit)
-          const [value, setValue] = useState(fromMinutes(initialMinutes, initialUnit).toString())
+          const [value, setValue] = useState(
+            fromMinutes(initialMinutes, initialUnit).toString()
+          )
           const [valid, setValid] = useState(true)
 
           useEffect(() => {
@@ -305,7 +310,9 @@ export default function RulesTable() {
             setUnit(newUnit)
             const newValue = fromMinutes(currentMinutes, newUnit)
             // Only show decimals if necessary
-            setValue(newValue % 1 === 0 ? newValue.toString() : newValue.toFixed(2))
+            setValue(
+              newValue % 1 === 0 ? newValue.toString() : newValue.toFixed(2)
+            )
           }
 
           return (
@@ -319,10 +326,7 @@ export default function RulesTable() {
                 onChange={(e) => setValue(e.target.value)}
                 onBlur={handleBlur}
               />
-              <Select
-                value={unit}
-                onValueChange={handleUnitChange}
-              >
+              <Select value={unit} onValueChange={handleUnitChange}>
                 <SelectTrigger
                   className="h-7 w-14 px-1 border-none focus:ring-0 focus:ring-offset-0 rounded-[4px] bg-transparent text-xs"
                   noIcon={true}
@@ -330,9 +334,15 @@ export default function RulesTable() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="rounded-[6px]">
-                  <SelectItem value="minutes" className="h-7 text-xs">min</SelectItem>
-                  <SelectItem value="hours" className="h-7 text-xs">hr</SelectItem>
-                  <SelectItem value="days" className="h-7 text-xs">day</SelectItem>
+                  <SelectItem value="minutes" className="h-7 text-xs">
+                    min
+                  </SelectItem>
+                  <SelectItem value="hours" className="h-7 text-xs">
+                    hr
+                  </SelectItem>
+                  <SelectItem value="days" className="h-7 text-xs">
+                    day
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -524,28 +534,32 @@ export default function RulesTable() {
 
   const regexColumn = table.getColumn("url_pattern")
 
-
   const [tabList, setTabList] = useState<TabListItem[]>([])
 
   async function refreshTabList() {
-    console.log('refreshTabList')
+    console.log("refreshTabList")
     const tabs = await browser.tabs.query({})
-    setTabList(tabs.filter(t => t.url && t.favIconUrl && t.title).map((t): TabListItem => {
-      return {
-        favicon_url: t.favIconUrl!,
-        url: t.url!,
-        title: t.title!,
-      }
-    }))
+    setTabList(
+      tabs
+        .filter((t) => t.url && t.favIconUrl && t.title)
+        .map((t): TabListItem => {
+          return {
+            favicon_url: t.favIconUrl!,
+            url: t.url!,
+            title: t.title!,
+          }
+        })
+    )
   }
-
 
   return (
     <div className="w-full flex flex-col min-h-64">
       <div className="flex items-center justify-end gap-2 w-full mb-2 relative left-28 pr-28">
         {dataDirty && (
           <div className="flex items-baseline gap-2">
-            <span className="pb-0 text-red-500">{vResult.ok ? 'Rules changed' : vResult.reason}</span>
+            <span className="pb-0 text-red-500">
+              {vResult.ok ? "Rules changed" : vResult.reason}
+            </span>
             <Button
               size="sm"
               className="h-8"
@@ -565,7 +579,6 @@ export default function RulesTable() {
           }}
         />
         <div className="flex items-center gap-2">
-
           <DropdownMenu
             onOpenChange={(open) => {
               if (open) {
@@ -584,40 +597,40 @@ export default function RulesTable() {
                 <Plus />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              side="bottom"
-              align="end"
-
-            >
+            <DropdownMenuContent side="bottom" align="end">
               <DropdownMenuItem
-                onClick={() => { newRule('') }}
+                onClick={() => {
+                  newRule("")
+                }}
               >
                 New blank rule
               </DropdownMenuItem>
 
-              {
-                tabList.length > 0 && <>
+              {tabList.length > 0 && (
+                <>
                   <DropdownMenuSeparator />
                   <DropdownMenuLabel>from tabs</DropdownMenuLabel>
                   <div className="max-h-[200px] overflow-y-scroll">
-                    {
-                      tabList.map(t => {
-                        const url = URL.parse(t.url);
-                        return <DropdownMenuItem
+                    {tabList.map((t) => {
+                      const url = URL.parse(t.url)
+                      return (
+                        <DropdownMenuItem
                           key={t.url}
                           onClick={() => {
                             newRule(t.url)
                           }}
                         >
                           <img src={t.favicon_url} className="h-4 w-4" />
-                          <span className="max-w-48 overflow-hidden text-nowrap text-ellipsis">{t.title}</span>
+                          <span className="max-w-48 overflow-hidden text-nowrap text-ellipsis">
+                            {t.title}
+                          </span>
                           <span className="text-gray-500">{url?.host}</span>
                         </DropdownMenuItem>
-                      })
-                    }
+                      )
+                    })}
                   </div>
                 </>
-              }
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -668,9 +681,9 @@ export default function RulesTable() {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   )
                 })}
@@ -684,7 +697,9 @@ export default function RulesTable() {
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
                   className={
-                    row.original.dirty ? "bg-yellow-50 hover:bg-yellow-50 dark:bg-stone-800 dark:hover:bg-stone-800" : ""
+                    row.original.dirty
+                      ? "bg-yellow-50 hover:bg-yellow-50 dark:bg-stone-800 dark:hover:bg-stone-800"
+                      : ""
                   }
                 >
                   {row.getVisibleCells().map((cell) => (
