@@ -52,7 +52,7 @@ import { cn } from "@/lib/utils"
 
 import { storage } from "wxt/storage"
 import { STORAGE_KEY_RULES } from "@/lib/storage"
-import { AppStateContext } from "./providers"
+import { AppStateContext } from "./Providers"
 import { browser } from "wxt/browser"
 
 

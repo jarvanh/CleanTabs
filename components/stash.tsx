@@ -27,7 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { AppStateContext } from "./providers"
+import { AppStateContext } from "./Providers"
 import { cn } from "@/lib/utils"
 import { StashItem } from "@/lib/stash"
 import { SmallCheckbox } from "@/components/ui/checkbox"

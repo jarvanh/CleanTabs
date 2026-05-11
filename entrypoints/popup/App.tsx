@@ -5,9 +5,9 @@ import { sendMessage } from 'webext-bridge/popup'
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Stash } from "@/components/stash"
-import Rules from "@/components/rules"
+import Rules from "@/components/Rules"
 import { Switch } from "@/components/ui/switch"
-import { AppStateContext } from "@/components/providers"
+import { AppStateContext } from "@/components/Providers"
 
 import logo from "/logo.png"
 import { Settings } from "@/components/settings"

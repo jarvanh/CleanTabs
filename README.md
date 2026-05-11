@@ -40,6 +40,8 @@ If
 > - pinned or grouped tabs if disabled in settings
 > - tabs excluded manually
 
+You can also discard a tab manually from the popup's `Tabs` view.
+
 
 # Rule
 

@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AppStateContext } from "./providers";
+import { AppStateContext } from "./Providers";
 import { Switch } from "./ui/switch";
 import { Label } from "./ui/label";
 import logo from '/logo.png'

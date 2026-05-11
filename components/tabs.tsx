@@ -15,11 +15,11 @@ import {
 import { getRelativeTime } from "@/lib/date";
 
 import { ChromeBookmarkIcon, ChromeExtensionIcon, ChromeIcon, ChromeSettingsIcon } from "./icons";
-import { AppStateContext } from "./providers";
+import { AppStateContext } from "./Providers";
 import { FindMatchedRule, Rule } from "@/lib/rule";
 import { ShortURL, Flag } from "@/lib/tab";
 import { Button } from "./ui/button";
-import { PinIcon } from "lucide-react";
+import { Moon, PinIcon } from "lucide-react";
 
 
 interface IWindow {
@@ -122,6 +122,7 @@ export function Tabs() {
                       setHoverTabId={setHoverTabId}
                       flag={flag}
                       upsertFlag={upsertFlag}
+                      refresh={refresh}
                     />
                   )
                 })
@@ -142,6 +143,7 @@ function TabItem({
   setHoverTabId,
   flag,
   upsertFlag,
+  refresh,
 }: {
   tab: TTabs.Tab,
   // setTabBounds?: (id: number, rect: RectReadOnly) => void,
@@ -149,6 +151,7 @@ function TabItem({
   setHoverTabId: (id?: number) => void,
   flag?: Flag,
   upsertFlag: (_: Flag) => Promise<void>,
+  refresh: () => Promise<void>,
 }) {
   let color = 'bg-green-500';
   if (tab.discarded) {
@@ -229,20 +232,45 @@ function TabItem({
           <span>last access: {lastAccess}</span>
         </div>
         <div className="mt-2 flex justify-between items-center">
-          <Button
-            title="Always keep this tab"
-            onClick={async () => {
-              if (tab.id) {
-                const keep = !!!flag?.always_keep
-                await upsertFlag({ ...flag, id: tab.id, always_keep: keep })
+          <div className="flex items-center gap-1">
+            <Button
+              title="Always keep this tab"
+              onClick={async () => {
+                if (tab.id) {
+                  const keep = !!!flag?.always_keep
+                  await upsertFlag({ ...flag, id: tab.id, always_keep: keep })
+                }
+              }}
+              size="icon"
+              variant="ghost"
+              className="rounded-[6px] w-8 h-8 outline-none focus-visible:ring-offset-0 focus-visible:ring-0 bg-accent"
+            >
+              <PinIcon strokeWidth={flag?.always_keep ? 2 : 1} className={flag?.always_keep ? 'text-primary' : ''} />
+            </Button>
+            <Button
+              title={
+                tab.active
+                  ? "Can't discard the active tab"
+                  : tab.discarded
+                    ? "Tab is already discarded"
+                    : "Discard this tab now"
               }
-            }}
-            size="icon"
-            variant="ghost"
-            className="rounded-[6px] w-8 h-8 outline-none focus-visible:ring-offset-0 focus-visible:ring-0 bg-accent"
-          >
-            <PinIcon strokeWidth={flag?.always_keep ? 2 : 1} className={flag?.always_keep ? 'text-primary' : ''} />
-          </Button>
+              disabled={!tab.id || tab.active || tab.discarded}
+              onClick={async () => {
+                if (!tab.id) return;
+                try {
+                  await browser.tabs.discard(tab.id)
+                } finally {
+                  await refresh()
+                }
+              }}
+              size="icon"
+              variant="ghost"
+              className="rounded-[6px] w-8 h-8 outline-none focus-visible:ring-offset-0 focus-visible:ring-0 bg-accent"
+            >
+              <Moon className="w-4 h-4" />
+            </Button>
+          </div>
           {
             matchedRule && <div className="flex justify-end font-mono">
               <span>No.{matchedRule.index}: inactive {matchedRule.inactive_minutes} minutes to {matchedRule.action}</span>

@@ -3,7 +3,7 @@ import { csv } from "codemirror-lang-ct"
 import { githubLight, githubDark } from '@uiw/codemirror-theme-github'
 
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AppStateContext } from './providers';
+import { AppStateContext } from './Providers';
 import { ParseRulesText, Rule2Text } from '@/lib/rule';
 import { Button } from '@/components/ui/button';
 import { useTheme } from './theme-provider';

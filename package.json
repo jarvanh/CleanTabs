@@ -45,7 +45,8 @@
     "react-dom": "^18.3.1",
     "react-use-measure": "^2.1.1",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "webext-bridge": "^6.0.1"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.269",
