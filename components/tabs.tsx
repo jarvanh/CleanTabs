@@ -39,14 +39,16 @@ const GroupColorValue: Record<chrome.tabGroups.ColorEnum, string> = {
   orange: "#f97316",
 }
 
-const TabTileClassName = "h-[43px] rounded-[6px] border border-transparent"
+const TabTileClassName = "h-[45px] rounded-[6px] border border-transparent"
+const GroupLabelClassName = "h-5 rounded-[6px]"
 
 type BrowserTabGroup = chrome.tabGroups.TabGroup
+type BrowserTab = TTabs.Tab & { groupId?: number }
 
 interface ITabSection {
   key: string
   title: string
-  tabs: TTabs.Tab[]
+  tabs: BrowserTab[]
   isGrouped: boolean
   groupId?: number
   group?: BrowserTabGroup
@@ -54,7 +56,7 @@ interface ITabSection {
 
 interface IWindow {
   window: Windows.Window
-  tabs: TTabs.Tab[]
+  tabs: BrowserTab[]
   sections: ITabSection[]
 }
 
@@ -129,7 +131,7 @@ async function getTabGroupsById(
 }
 
 function buildTabSections(
-  tabs: TTabs.Tab[],
+  tabs: BrowserTab[],
   groupsById: Map<number, BrowserTabGroup>
 ): ITabSection[] {
   const sections: ITabSection[] = []
@@ -185,7 +187,7 @@ async function getAllWindows(): Promise<IWindow[]> {
     windows.map((w, i) => [w.window.id!, i])
   )
 
-  const tabs = await browser.tabs.query({})
+  const tabs = (await browser.tabs.query({})) as BrowserTab[]
   const groupIds = new Set<number>()
 
   tabs.forEach((t) => {
@@ -250,7 +252,7 @@ export function Tabs() {
   }, [])
 
   return (
-    <div className="flex flex-col gap-2 p-2">
+    <div className="flex flex-col gap-2 p-0">
       {windows.map((w, i) => {
         return (
           <div key={w.window.id}>
@@ -269,7 +271,7 @@ export function Tabs() {
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-start gap-1">
+              <div className="-mt-1.5 leading-none">
                 {w.sections.map((section) => {
                   if (!section.isGrouped) {
                     return (
@@ -281,6 +283,7 @@ export function Tabs() {
                               key={t.id}
                               tab={t}
                               section={section}
+                              wrapperClassName="mr-1 inline-flex align-bottom pt-1.5"
                               hoverTabId={hoverTabId}
                               setHoverTabId={setHoverTabId}
                               flag={flag}
@@ -298,17 +301,25 @@ export function Tabs() {
                   return (
                     <div
                       key={section.key}
-                      className="inline-flex max-w-full flex-wrap items-start gap-1 border-b-2 pb-1"
+                      className="mr-1 inline align-bottom box-decoration-clone border-b-2 pb-0 leading-none"
                       style={{ borderColor: groupColor }}
                     >
-                      <GroupLabelItem section={section} />
-                      {section.tabs.map((t) => {
+                      <GroupLabelItem
+                        section={section}
+                        className="relative -top-0.5 mr-1 inline-flex align-bottom"
+                      />
+                      {section.tabs.map((t, index) => {
                         let flag = flags.find((f) => f.id === t.id)
+                        const isLast = index === section.tabs.length - 1
                         return (
                           <TabItem
                             key={t.id}
                             tab={t}
                             section={section}
+                            wrapperClassName={cn(
+                              "inline-flex align-bottom pt-1.5",
+                              !isLast && "mr-1"
+                            )}
                             hoverTabId={hoverTabId}
                             setHoverTabId={setHoverTabId}
                             flag={flag}
@@ -329,14 +340,21 @@ export function Tabs() {
   )
 }
 
-function GroupLabelItem({ section }: { section: ITabSection }) {
+function GroupLabelItem({
+  section,
+  className,
+}: {
+  section: ITabSection
+  className?: string
+}) {
   const groupColor = getGroupColor(section.group?.color)
 
   return (
     <div
       className={cn(
-        "flex max-w-[220px] items-center gap-2 px-2 text-xs font-medium",
-        TabTileClassName
+        "inline-flex max-w-[220px] items-center gap-2 px-2 py-1 text-xs font-medium transition-[filter] duration-150 hover:brightness-95",
+        GroupLabelClassName,
+        className
       )}
       style={{
         backgroundColor: groupColor,
@@ -359,6 +377,7 @@ function TabItem({
   flag,
   upsertFlag,
   refresh,
+  wrapperClassName,
 }: {
   tab: TTabs.Tab
   section: ITabSection
@@ -368,6 +387,7 @@ function TabItem({
   flag?: Flag
   upsertFlag: (_: Flag) => Promise<void>
   refresh: () => Promise<void>
+  wrapperClassName?: string
 }) {
   let lastAccess = null
   if (tab.lastAccessed) {
@@ -429,7 +449,7 @@ function TabItem({
   }, [])
 
   return (
-    <div>
+    <div className={wrapperClassName}>
       <Popover open={popoverOpen}>
         <PopoverTrigger
           onMouseEnter={() => {
@@ -445,9 +465,11 @@ function TabItem({
         >
           <div
             className={cn(
-              "flex flex-col items-center justify-center gap-1 cursor-pointer px-1 py-1",
+              "flex flex-col items-center justify-center gap-1 cursor-pointer px-1 py-1 transition-colors duration-150",
               TabTileClassName,
-              tab.active ? "bg-primary/20" : "",
+              tab.active
+                ? "bg-primary/20 hover:bg-primary/25"
+                : "hover:bg-neutral-200 dark:hover:bg-neutral-800/70",
               flag?.always_keep ? "border-primary/80" : ""
             )}
             onClick={() => {
